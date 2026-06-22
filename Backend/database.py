@@ -12,4 +12,4 @@ system_collection = db["system_state"]
 
 def store_email(data: dict):
     data["timestamp"] = datetime.utcnow()
-    emails_collection.insert_one(data)
+    return emails_collection.insert_one(data).inserted_id

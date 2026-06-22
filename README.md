@@ -1,438 +1,505 @@
-# PhishGuard: AI-Powered Phishing Email Detection System
+<div align="center">
+
+# PhishGuard
+
+**AI-powered phishing email detection for Gmail — real-time ensemble ML in a Chrome extension.**
+
+[![Python](https://img.shields.io/badge/Python-3-blue?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
+[![Flask](https://img.shields.io/badge/Flask-3.1-000000?style=for-the-badge&logo=flask&logoColor=white)](https://flask.palletsprojects.com/)
+[![TensorFlow](https://img.shields.io/badge/TensorFlow-Keras-FF6F00?style=for-the-badge&logo=tensorflow&logoColor=white)](https://www.tensorflow.org/)
+[![Chrome Extension](https://img.shields.io/badge/Chrome-Manifest%20V3-4285F4?style=for-the-badge&logo=googlechrome&logoColor=white)](https://developer.chrome.com/docs/extensions/)
+[![MongoDB](https://img.shields.io/badge/MongoDB-pymongo-47A248?style=for-the-badge&logo=mongodb&logoColor=white)](https://www.mongodb.com/)
+[![License](https://img.shields.io/badge/License-MIT-lightgrey?style=for-the-badge)](LICENSE)
+
+**Hybrid Ensemble · Chrome Extension · Flask REST API · Hugging Face · MongoDB**
+
+**[Live Demo — Model Info & Evaluation →](https://phishguard-web-six.vercel.app/)**
+
+[Overview](#overview) · [Features](#features) · [Architecture](#architecture) · [Installation](#installation) · [Usage](#usage) · [API Reference](#api-reference)
+
+</div>
+
+---
 
 ## Overview
 
-PhishGuard is an intelligent phishing-email detection system that integrates multiple Machine Learning (ML) and Deep Learning (DL) models within a browser extension. The system analyzes emails in real time, extracts relevant textual and structural features, and evaluates them using an ensemble of models to determine the likelihood that the email is phishing.
+PhishGuard analyzes Gmail messages in real time. A Chrome extension extracts email content, sends it to a local **Flask** API, and scores it with a **weighted ensemble of five models** — classical ML, recurrent networks, and **DistilBERT** via the Hugging Face Inference API.
 
-The architecture combines classical ML models, neural networks, and transformer-based models to achieve robust detection. Results are presented to the user through a browser extension using a simple risk-level interface (Green – Safe, Yellow – Suspicious, Red – Phishing). Feedback from users is stored and used to automatically adjust ensemble weights using reinforcement learning principles.
+Results surface inline in Gmail as a color-coded badge (`GREEN` · `YELLOW` · `RED`) and in the extension popup with a risk gauge, trusted-sender bypass, HTML security reports, and optional user feedback.
 
----
+## Why PhishGuard?
 
-## Key Features
+Phishing emails blend social engineering with subtle technical signals — urgent language, spoofed senders, obfuscated links, and HTML tricks that evade simple filters. No single model captures all of this reliably.
 
-* Real-time phishing detection through a browser extension
-* Ensemble learning combining 5 different models
-* Transformer-based contextual analysis using DistilBERT
-* Automatic ensemble weight adjustment using feedback
-* MongoDB database integration for storing email analysis and feedback
-* Risk-based classification system (Green / Yellow / Red)
-* Reinforcement learning framework for continuous improvement
-* Backend API built with Flask
-* HTML parsing and preprocessing pipeline for email content
+PhishGuard uses a **hybrid ensemble** by design:
 
----
+- **Classical ML** (Logistic Regression, Random Forest) handles sparse TF-IDF patterns efficiently.
+- **Sequence models** (LSTM, BiLSTM + Attention) capture word order and local context.
+- **DistilBERT** adds transformer-level semantic understanding via the Hugging Face API.
 
-## System Architecture
+Predictions run **in parallel**, are combined with configurable weights, and map to a three-tier risk score users can act on immediately.
 
-```
-Browser Extension
-        │
-        ▼
-Email Extraction (content.js)
-        │
-        ▼
-JSON Payload Sent to Backend
-        │
-        ▼
-Flask Backend API
-        │
-        ▼
-Email Preprocessing
-    • HTML parsing
-    • Visible text extraction
-    • URL extraction
-    • Feature generation
-        │
-        ▼
-ML/DL Ensemble Models
-    • Logistic Regression
-    • Random Forest
-    • LSTM
-    • BiLSTM + Attention
-    • DistilBERT
-        │
-        ▼
-Ensemble Decision Engine
-        │
-        ▼
-Risk Classification
-(Green / Yellow / Red)
-        │
-        ▼
-Result Sent to Extension UI
-        │
-        ▼
-Stored in MongoDB
-```
+## Repository at a Glance
+
+| | |
+| --- | --- |
+| **Models** | 5 — Logistic Regression, Random Forest, LSTM, BiLSTM + Attention, DistilBERT |
+| **Backend** | Flask (`127.0.0.1:5000`) |
+| **Database** | MongoDB — `phishing_db` |
+| **Extension** | Chrome Manifest V3 · Gmail (`mail.google.com`) |
+| **Inference** | Parallel pipeline — `ThreadPoolExecutor` (4 workers) |
+| **API endpoints** | `POST /analyze`, `POST /feedback` |
+
+> Dataset size and cloud deployment details are not defined in this repository. Model evaluation metrics are on the [live demo site](https://phishguard-web-six.vercel.app/).
 
 ---
 
-## Models Used
+## Visual Preview
 
-### Logistic Regression
-
-A classical machine learning model trained using TF-IDF features extracted from email text.
-
-### Random Forest
-
-An ensemble tree-based model that improves robustness against noisy text and sparse features.
-
-### LSTM
-
-A recurrent neural network designed to capture sequential dependencies in email content.
-
-### BiLSTM with Attention
-
-An enhanced version of LSTM that processes sequences bidirectionally and uses an attention mechanism to focus on important tokens.
-
-### DistilBERT
-
-A lightweight transformer model capable of contextual language understanding. It captures semantic relationships within email content.
+| Architecture | Gmail badge | Extension popup | Demo |
+| :---: | :---: | :---: | :---: |
+| ![Architecture diagram](docs/assets/architecture.png) | ![Gmail screenshot](docs/assets/gmail-badge.png) | ![Chrome extension popup](docs/assets/popup.png) | ![Demo GIF](docs/assets/demo.gif) |
 
 ---
 
-## Ensemble Model
+## Features
 
-All models produce probability scores for two classes:
-
-```
-0 → Legitimate Email
-1 → Phishing Email
-```
-
-The final prediction is computed using a weighted ensemble:
-
-```
-Final Probability =
-Σ (model_probability × model_weight)
-```
-
-Initial weights are manually set but later updated automatically using feedback.
+| Capability | Description |
+| --- | --- |
+| Real-time Gmail scanning | DOM observation with debounced extraction when an email is opened |
+| 5-model ensemble | LR, RF, LSTM, BiLSTM + Attention, DistilBERT (HF API) |
+| Parallel inference | Four concurrent tasks via `ThreadPoolExecutor` (4 workers) |
+| Three-tier risk UI | `GREEN` / `YELLOW` / `RED` with probability and recommended action |
+| Trusted senders | Full addresses or `*@domain.com` wildcards bypass the backend |
+| User feedback | Clickable Gmail badge submits labels to `POST /feedback` |
+| MongoDB persistence | Analysis records, per-model outputs, and ensemble weights |
+| Security reports | Popup exports a styled HTML report |
+| Consent-gated activation | Scanning starts only after `userConsent` is set during onboarding |
 
 ---
 
-## Risk Classification
+## Architecture
 
-Based on phishing probability:
+### System overview
 
-| Probability | Risk Level | Color  |
-| ----------- | ---------- | ------ |
-| ≥ 0.70      | Phishing   | Red    |
-| 0.50 – 0.70 | Suspicious | Yellow |
-| < 0.50      | Safe       | Green  |
+```mermaid
+flowchart TB
+    subgraph Browser["Chrome Extension (Gmail)"]
+        CS[content.js]
+        BG[background.js]
+        POP[popup.js]
+        SET[settings.js]
+    end
 
-The extension displays:
+    subgraph Backend["Flask — 127.0.0.1:5000"]
+        APP[app.py]
+        PRE[email_preprocessing.py]
+        ENS[ensemble.py]
+        DB[database.py]
+    end
 
-* Risk badge
-* Explanation
-* Recommended action
+    subgraph External["External"]
+        HF[Hugging Face DistilBERT]
+        MONGO[(MongoDB phishing_db)]
+    end
+
+    subgraph LocalModels["Backend/models/"]
+        LR[LR + TF-IDF]
+        RF[Random Forest]
+        LSTM[LSTM]
+        BILSTM[BiLSTM + Attention]
+    end
+
+    CS -->|POST /analyze| APP
+    CS -->|POST /feedback| APP
+    POP <-->|sendMessage| CS
+    APP --> PRE --> ENS
+    ENS --> LocalModels
+    ENS -->|HTTP| HF
+    APP --> DB --> MONGO
+    ENS -->|reads/writes weights| DB
+```
+
+### Request flow
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant E as Extension
+    participant F as /analyze
+    participant P as Preprocessor
+    participant M as Ensemble
+    participant D as MongoDB
+
+    U->>E: Opens email
+    alt Trusted sender
+        E->>U: GREEN badge (no API call)
+    else Analysis
+        E->>F: sender, subject, body, links
+        F->>P: process_email_json()
+        F->>M: ensemble_predict(clean_text)
+        par Parallel (ThreadPoolExecutor)
+            M->>M: LR + RF (TF-IDF)
+            M->>M: LSTM + BiLSTM (shared padded sequence)
+            M->>M: DistilBERT API
+        end
+        F->>D: store_email()
+        F-->>E: risk_level, email_id
+        E->>U: Badge + feedback UI
+    end
+```
+
+### Ensemble & risk mapping
+
+```mermaid
+flowchart LR
+    T[Combined text] --> LR & RF & LSTM & BILSTM & BERT
+    LR & RF & LSTM & BILSTM & BERT --> W[Weighted average]
+    W --> R{phishing_probability}
+    R -->|≥ 0.70| RED[RED]
+    R -->|0.50 – 0.69| YEL[YELLOW]
+    R -->|< 0.50| GRN[GREEN]
+```
+
+Default weights (`lr` 0.25 · `rf` 0.15 · `lstm` 0.10 · `bilstm` 0.15 · `bert` 0.35) are stored in MongoDB (`system_state.ensemble_weights`) and snapshotted on each analysis.
 
 ---
 
-## Reinforcement Learning Weight Adjustment
+## Tech Stack
 
-The system improves itself through user feedback.
+<table>
+<tr>
+<td width="50%" valign="top">
 
-When a user marks a prediction as correct or incorrect:
+**Frontend**
 
-1. Feedback is stored in MongoDB.
-2. Model predictions are compared with ground truth.
-3. Ensemble weights are updated.
+- Chrome Extension Manifest V3
+- Vanilla JavaScript
+- `chrome.storage` (local + session)
+- Content scripts on Gmail
 
-Weight update principle:
+</td>
+<td width="50%" valign="top">
 
-```
-New Weight = Old Weight + α × (reward)
-```
+**Backend**
 
-Where:
+- Python · Flask · Flask-CORS
+- `ThreadPoolExecutor` (4 workers)
+- `python-dotenv`
 
-```
-reward = +1 if model correct
-reward = −1 if model incorrect
-α = learning rate
-```
+</td>
+</tr>
+<tr>
+<td valign="top">
 
-Recent feedback receives higher importance using time-decay weighting.
+**Machine Learning**
 
----
+- scikit-learn models via joblib
+- TensorFlow / Keras (LSTM, BiLSTM + Attention)
+- DistilBERT — [HF Inference API](https://huggingface.co/cybersectony/phishing-email-detection-distilbert_v2.4.1)
 
-## Email Preprocessing Pipeline
+</td>
+<td valign="top">
 
-Incoming email JSON is processed through multiple stages.
+**Data & Parsing**
 
-### Step 1 – HTML Parsing
+- MongoDB (`pymongo`) — `phishing_db`
+- BeautifulSoup4 · regex · `urllib.parse`
 
-Removes HTML tags and scripts.
-
-### Step 2 – Visible Text Extraction
-
-Extracts meaningful content visible to users.
-
-### Step 3 – URL Extraction
-
-Identifies embedded links.
-
-### Step 4 – Feature Generation
-
-Computes features such as:
-
-* URL count
-* Suspicious domains
-* IP-based URLs
-* Punycode presence
-* Text length
-
----
-
-## Browser Extension
-
-The extension performs three primary tasks:
-
-### Email Extraction
-
-Captures sender, subject, body, and links.
-
-### Backend Communication
-
-Sends extracted email data as JSON to the backend API.
-
-### Result Display
-
-Displays phishing risk information directly within the email interface.
-
----
-
-## Backend API
-
-The Flask backend exposes the following endpoint:
-
-### Analyze Email
-
-```
-POST /analyze
-```
-
-Request format:
-
-```
-{
-  "sender": "...",
-  "subject": "...",
-  "body": {
-      "html": "...",
-      "text": "..."
-  },
-  "links": [...]
-}
-```
-
-Response format:
-
-```
-{
-  "risk": "GREEN",
-  "confidence": 0.98,
-  "explanation": "...",
-  "action": "allow"
-}
-```
-
----
-
-## MongoDB Database
-
-The system stores all analyzed emails and feedback for future training.
-
-### Collections
-
-**emails**
-
-Stores analyzed email data.
-
-Fields:
-
-```
-text
-prediction
-confidence
-timestamp
-model_probabilities
-```
-
-**feedback**
-
-Stores user feedback used for reinforcement learning.
-
-Fields:
-
-```
-email_id
-true_label
-timestamp
-```
+</td>
+</tr>
+</table>
 
 ---
 
 ## Project Structure
 
 ```
-PhishGuard
-│
-├── Backend
+PhishGuard/
+├── Backend/
 │   ├── app.py
 │   ├── ensemble.py
 │   ├── email_preprocessing.py
 │   ├── database.py
+│   ├── requirements.txt
+│   └── .env                    # create this — not committed
 │
-├── Extension (Frontend)
-│   ├── background.js
+├── Extension (Frontend)/
 │   ├── manifest.json
 │   ├── content.js
-│   ├── onboarding.html
-│   ├── onboarding.css
-│   ├── onboarding.js
-│   ├── settings.html
-│   ├── settings.css
-│   ├── settings.js
-│   ├── popup.css
-│   ├── popup.html
-│   └── popup.js
+│   ├── background.js
+│   ├── popup.html / popup.js / popup.css
+│   ├── settings.html / settings.js / settings.css
+│   └── onboarding.html / onboarding.js / onboarding.css
 │
-├── Models
+├── Models/                     # trained artifacts committed here
 │   ├── logistic_model.pkl
 │   ├── random_forest_model.pkl
 │   ├── tfidf_vectorizer.pkl
 │   ├── lstm_phishing_model.keras
+│   ├── tokenizer.pkl
 │   └── bilstm_attn_model.h5
 │
+├── docs/assets/                # README image placeholders
+├── .gitignore
+├── LICENSE
 └── README.md
 ```
 
+The backend (`ensemble.py`) loads models from `Backend/models/`. Before starting the API, copy the artifacts from the repo's `Models/` directory into that path (see [Installation](#installation)).
+
 ---
 
-## Installation Guide
+## Installation
 
-### 1. Clone Repository
+### Prerequisites
 
-```
-git clone https://github.com/your-repo/PhishGuard.git
+- Python 3 with `venv`
+- Google Chrome
+- MongoDB instance (connection string via `MONGO_URL`)
+- Hugging Face API token
+
+### 1. Clone
+
+```bash
+git clone https://github.com/mak3012/PhishGuard.git
 cd PhishGuard
 ```
 
-### 2. Create Virtual Environment
+### 2. Copy model artifacts
 
+`ensemble.py` resolves model paths relative to `Backend/models/`. The trained files are committed at `Models/` (repo root); copy them before starting the API.
+
+**Windows (PowerShell):**
+
+```powershell
+New-Item -ItemType Directory -Force Backend\models
+Copy-Item Models\* Backend\models\
 ```
+
+**macOS / Linux:**
+
+```bash
+mkdir -p Backend/models
+cp Models/* Backend/models/
+```
+
+### 3. Backend environment
+
+```bash
+cd Backend
 python -m venv venv
+```
+
+**Windows (PowerShell):**
+
+```powershell
+.\venv\Scripts\Activate.ps1
+```
+
+**macOS / Linux:**
+
+```bash
 source venv/bin/activate
 ```
 
-Windows:
-
-```
-venv\Scripts\activate
-```
-
-### 3. Install Dependencies
-
-```
+```bash
 pip install -r requirements.txt
 ```
 
-### 4. Setting up .env file
-The backend requires the following environment variables.
+### 4. Environment variables
 
-File location:
-backend/.env
+Create `Backend/.env`:
 
-Contents:
-```
+```env
 HF_TOKEN=your_huggingface_api_token
 BERT_API_URL=https://router.huggingface.co/hf-inference/models/cybersectony/phishing-email-detection-distilbert_v2.4.1
-MONGO_URL=mongodb+srv://username:password@phishguard.afti2df.mongodb.net/phishing_db?retryWrites=true&w=majority
+MONGO_URL=mongodb+srv://<user>:<password>@<cluster>.mongodb.net/phishing_db?retryWrites=true&w=majority
 ```
 
-These variables configure:
-- HuggingFace inference access
-- DistilBERT inference endpoint
-- MongoDB database connection
+| Variable | Purpose |
+| --- | --- |
+| `HF_TOKEN` | Hugging Face Inference API bearer token |
+| `BERT_API_URL` | DistilBERT endpoint |
+| `MONGO_URL` | MongoDB connection string |
 
----
-## Running the Backend
+### 5. Run the API
 
-```
+```bash
 python app.py
 ```
 
-Server will start at:
+Listens at **http://127.0.0.1:5000**.
 
+### 6. Load the extension
+
+1. Open `chrome://extensions`
+2. Enable **Developer mode**
+3. **Load unpacked** → select `Extension (Frontend)`
+4. Complete onboarding and refresh Gmail tabs
+
+---
+
+## Usage
+
+**Auto-scan** — With the backend running and onboarding complete, opening a Gmail message triggers analysis. A badge appears next to the subject: `SCANNING` → `SAFE` / `SUSPICIOUS` / `PHISHING`.
+
+**Popup** — Toolbar icon shows the risk gauge, sender, link count, **Re-Scan**, **Report** download, and **Model Info** link.
+
+**Trusted senders** — Settings accepts `user@example.com` or `*@domain.com`. Trusted messages are marked safe locally without calling the API.
+
+**Feedback** — Click the Gmail badge to label an email `legitimate_email` or `phishing_email`. Sent to `POST /feedback` and stored on the MongoDB record.
+
+---
+
+## API Reference
+
+### `POST /analyze`
+
+**Request:**
+
+```json
+{
+  "sender": "sender@example.com",
+  "subject": "Account verification required",
+  "body": { "html": "<p>...</p>", "text": "..." },
+  "links": [{ "url": "https://example.com", "text": "Click here" }]
+}
 ```
-http://127.0.0.1:5000
+
+**Response:**
+
+```json
+{
+  "email_id": "...",
+  "risk_level": "YELLOW",
+  "phishing_probability": 0.62,
+  "confidence": 0.62,
+  "explanation": "This might be a phishing email",
+  "details": { "color": "#f1c40f", "action": "review" }
+}
+```
+
+Also accepts `OPTIONS` (CORS preflight).
+
+### `POST /feedback`
+
+**Request:**
+
+```json
+{
+  "email_id": "...",
+  "true_label": "phishing_email"
+}
+```
+
+`true_label`: `legitimate_email` or `phishing_email`.
+
+**Response:**
+
+```json
+{
+  "message": "Feedback recorded",
+  "updated_weights": { "lr": 0.25, "rf": 0.15, "lstm": 0.10, "bilstm": 0.15, "bert": 0.35 }
+}
 ```
 
 ---
 
-## Running the Browser Extension
+## Models
 
-1. Open Chrome
-2. Navigate to:
+| Model | Input | Default weight |
+| --- | --- | --- |
+| Logistic Regression | TF-IDF vectors | 0.25 |
+| Random Forest | TF-IDF vectors | 0.15 |
+| LSTM | Tokenized sequence (max 100) | 0.10 |
+| BiLSTM + Attention | Tokenized sequence + custom attention layer | 0.15 |
+| DistilBERT | HF API (text truncated to 2000 chars) | 0.35 |
 
-```
-chrome://extensions
-```
+DistilBERT outputs are normalized from labels such as `legitimate_email`, `legitimate_url`, `phishing_url`, and `phishing_url_alt` into binary probabilities.
 
-3. Enable **Developer Mode**
-4. Click **Load Unpacked**
-5. Select the extension folder
+### Risk thresholds
 
-The extension will now analyze emails automatically.
+| Phishing probability | Level | Action |
+| --- | --- | --- |
+| ≥ 0.70 | `RED` | block |
+| 0.50 – 0.69 | `YELLOW` | review |
+| < 0.50 | `GREEN` | allow |
 
----
+### Preprocessing
 
-## Model Evaluation
+`process_email_json()` builds model input:
 
-Models were evaluated using the following metrics:
+1. Strip HTML tags (`script`, `style`, `noscript`, `iframe`, `svg`)
+2. Extract visible text (fallback: plain `body.text`)
+3. Collect URLs from the links array
+4. Compute URL and image heuristics (`url_features`, `image_features`)
+5. Assemble `clean_text`: sender, subject, body, and link URLs
 
-* ROC Curve
-* Precision-Recall Curve
-* Confusion Matrix
-* Accuracy
-* Macro Precision
-* Macro Recall
-* Macro F1 Score
-* Inference Speed
-
-A comparative analysis was conducted between:
-
-* Individual models
-* Ensemble model
+Ensemble models score `clean_text` only.
 
 ---
 
-## Future Improvements
+## MongoDB Schema
 
-Potential future work includes:
+**Database:** `phishing_db`
 
-* Fine-tuning transformer models on the phishing dataset
-* OCR analysis for image-based phishing emails
-* Graph-based analysis of phishing domains
-* Federated learning for privacy-preserving updates
-* Deployment on scalable cloud infrastructure
+| Collection | Purpose |
+| --- | --- |
+| `emails` | Analysis records and user feedback |
+| `system_state` | Ensemble weights (`_id: "ensemble_weights"`) |
+
+**`emails` fields:** `sender`, `subject`, `clean_text` (first 500 chars), `final_prediction`, `final_confidence`, `phishing_probability`, `risk_level`, `model_outputs`, `feedback`, `weights_used`, `timestamp`
 
 ---
 
-## License
+## Engineering Highlights
 
-This project is released for academic and research purposes.
+| Pattern | Implementation |
+| --- | --- |
+| Parallel scoring | LR/RF, LSTM, BiLSTM, BERT dispatched concurrently via `ThreadPoolExecutor(max_workers=4)` |
+| Shared tokenization | Padded sequence computed once and reused by both LSTM and BiLSTM |
+| Local + remote inference | Classical/RNN models load from disk; DistilBERT runs via HF Inference API |
+| Debounced extraction | 500 ms delay + HTML fingerprint check in `content.js` before re-analysis |
+| Trusted-sender bypass | Skips API call entirely for configured senders; result is local only |
+| Weight persistence | Default weights seeded to MongoDB `system_state` on first backend start |
+| Custom attention layer | `AttentionLayer` (Keras `Layer` subclass) loaded with `custom_objects` for BiLSTM |
+
+Evaluation metrics are on the [live demo site](https://phishguard-web-six.vercel.app/).
+
+---
+
+## My Contributions
+
+**Ayush Makade** ([@mak3012](https://github.com/mak3012))
+
+- Designed and implemented the HTML-aware email preprocessing pipeline — extracting visible text from raw HTML via BeautifulSoup, engineering URL and image heuristics, and assembling the `clean_text` representation consumed by all five ensemble models.
+- Built and integrated the Flask REST API, connecting the preprocessing layer to the ensemble inference pipeline and handling real-time communication with the Chrome extension across `POST /analyze` and `POST /feedback`.
+- Integrated the hybrid ensemble inference pipeline, combining Logistic Regression, Random Forest, LSTM, BiLSTM + Attention, and DistilBERT into a unified parallel scoring workflow with MongoDB-backed configurable weighted averaging.
+- Authored all technical documentation — system architecture diagrams, API reference, preprocessing specification, and installation guides — structured to serve both recruiters and engineers onboarding to the project.
+- Prepared and published the portfolio version of the repository: organized the project structure, added `requirements.txt`, `LICENSE`, and `.gitignore`, and released the codebase on GitHub.
 
 ---
 
 ## Authors
 
-- **Savio David** - Models, Database and Backend
-- **Aaron Coutinho** - Frontend and Extension
-- **Deyon Tomy** - Data Acquisition and Dataset Generation
-- **Ayush Makade** - Documentation
+- **Savio David**
+- **Aaron Coutinho**
+- **Deyon Tomy**
+- **Ayush Makade**
 
 Developed as part of an academic research project on phishing detection using ensemble machine learning techniques.
 
+---
+
+## License
+
+[MIT License](LICENSE) — developed primarily for academic and research purposes.
+
+---
+
+<div align="center">
+
+**[⬆ Back to top](#phishguard)**
+
+</div>

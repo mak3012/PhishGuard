@@ -259,3 +259,11 @@ def risk_level_from_ensemble(phish_prob):
             "action": "allow",
             "short_message": "Likely safe"
         }
+
+
+def update_weights_from_feedback():
+    global WEIGHTS
+    stored = system_collection.find_one({"_id": "ensemble_weights"})
+    if stored and "weights" in stored:
+        WEIGHTS = stored["weights"]
+    return WEIGHTS
