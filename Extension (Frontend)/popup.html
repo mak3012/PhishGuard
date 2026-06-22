@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PhishGuard</title>
+  <link rel="stylesheet" href="popup.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+  <!-- BACKGROUND ORBS -->
+  <div class="background-orb orb-1"></div>
+  <div class="background-orb orb-2"></div>
+
+  <div class="app-container">
+
+    <!-- HEADER -->
+    <header>
+      <div class="logo">
+        <span class="shield-icon">🛡️</span> PhishGuard
+      </div>
+      <div class="settings-icon">⚙️</div>
+    </header>
+
+    <!-- INACTIVE STATE (Default hidden) -->
+    <div id="inactive-view" style="display: none;">
+      <div class="empty-state">
+        <div class="icon-large">📫</div>
+        <h2>Ready to Scan</h2>
+        <p>Open a Gmail email to start analysis.</p>
+      </div>
+    </div>
+
+    <!-- MAIN DASHBOARD -->
+    <div id="main-view">
+
+      <!-- HERO: RISK GAUGE -->
+      <div class="risk-section">
+        <div class="gauge-container">
+          <svg class="progress-ring" width="120" height="120">
+            <circle class="progress-ring__circle-bg" stroke="#ffffff10" stroke-width="8" fill="transparent" r="52"
+              cx="60" cy="60" />
+            <circle class="progress-ring__circle" stroke="var(--status-color)" stroke-width="8" fill="transparent"
+              r="52" cx="60" cy="60" />
+          </svg>
+          <div class="gauge-value">
+            <span id="score-text">0</span>%
+            <div class="gauge-label">RISK</div>
+          </div>
+        </div>
+        <div class="status-badge" id="status-badge">
+          Analyzing...
+        </div>
+        <div class="trusted-badge" id="trusted-badge" style="display: none;">
+          🛡️ Trusted Sender ✓
+        </div>
+      </div>
+
+      <!-- DETAILS CARD -->
+      <div class="details-card glass-panel">
+
+        <!-- SENDER ROW -->
+        <div class="detail-row">
+          <div class="row-icon">👤</div>
+          <div class="row-content">
+            <div class="row-label">Sender</div>
+            <div class="row-value" id="sender-display">Unknown</div>
+          </div>
+          <button id="addTrustedBtn" class="add-trusted-btn" title="Add to Trusted Senders" style="display: none;">+
+            Trust</button>
+        </div>
+
+        <!-- STATS ROW -->
+        <div class="stats-grid">
+          <div class="stat-item">
+            <div class="stat-value" id="link-count">0</div>
+            <div class="stat-label">Links</div>
+          </div>
+        </div>
+
+        <!-- EXPANDABLE DETAILS (Accordion) -->
+        <details class="more-details">
+          <summary>View Message Analysis</summary>
+          <div class="analysis-content">
+            <p><strong>Subject:</strong> <span id="subject-display">...</span></p>
+            <p><strong>Content Preview:</strong> <span id="body-display">...</span></p>
+            <div id="reasons-list"></div>
+          </div>
+        </details>
+
+      </div>
+
+      <div class="actions">
+        <!-- 'Refresh' replaces 'Extract' -->
+        <button id="refreshBtn" class="action-btn primary-btn">
+          <span>🔄</span> Re-Scan
+        </button>
+        <button id="downloadBtn" class="action-btn secondary-btn" style="display: none;">
+          <span>📥</span> Report
+        </button>
+        <a href="https://phishguard-web-six.vercel.app/" target="_blank" class="action-btn"
+          style="text-decoration: none; background: rgba(88, 166, 255, 0.1); color: #58a6ff; border: 1px solid rgba(88,166,255,0.3); display: flex; align-items: center; justify-content: center; gap: 6px;">
+          <span>🧠</span> Model Info
+        </a>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+
+</html>

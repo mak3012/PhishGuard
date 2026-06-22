@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Welcome to PhishGuard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="onboarding.css">
+</head>
+<body>
+  <div class="background-orb orb-1"></div>
+  <div class="background-orb orb-2"></div>
+
+  <main class="container">
+    <header class="hero-section">
+      <div class="logo-container">
+        <span class="logo-icon">🛡️</span>
+      </div>
+      <h1 class="hero-title">PhishGuard <span class="highlight">Activated</span></h1>
+      <p class="hero-subtitle">Your inbox is now protected by advanced AI analysis.</p>
+    </header>
+
+    <section class="features-grid">
+      <div class="feature-card delay-1">
+        <div class="icon">🔍</div>
+        <h3>Real-time Scanning</h3>
+        <p>We analyze headers and body content instantly when you open an email.</p>
+      </div>
+      <div class="feature-card delay-2">
+        <div class="icon">🤖</div>
+        <h3>AI Detection</h3>
+        <p>Smart algorithms identify subtle phishing attempts that slip through standard filters. <a href="https://phishguard-web-six.vercel.app/" target="_blank" style="color: #58a6ff; text-decoration: none; font-weight: 500;">Learn about our models &rarr;</a></p>
+      </div>
+      <div class="feature-card delay-3">
+        <div class="icon">🔒</div>
+        <h3>Privacy First</h3>
+        <p>Data is analyzed locally or securely processed. We respect your privacy.</p>
+      </div>
+    </section>
+
+    <section class="permission-section">
+      <div class="permission-card">
+        <div class="perm-info">
+          <h3>Almost Ready!</h3>
+          <p>We need your permission to scan content on Gmail tabs.</p>
+        </div>
+        <button id="enable-btn" class="cta-button">Enable Protection</button>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <p>By using PhishGuard, you agree to our <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.</p>
+    </footer>
+  </main>
+
+  <script src="onboarding.js"></script>
+</body>
+</html>

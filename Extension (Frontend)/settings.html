@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - PhishGuard</title>
+    <link rel="stylesheet" href="settings.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+    <div class="background-orb orb-1"></div>
+    <div class="background-orb orb-2"></div>
+
+    <div class="settings-container">
+
+        <header>
+            <div class="header-left">
+                <span id="back-btn" class="icon-btn">←</span>
+                <h1>Settings</h1>
+            </div>
+        </header>
+
+        <main>
+
+            <!-- GENERAL -->
+            <section class="settings-group">
+                <h2>General</h2>
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <label>Auto-Scan Emails</label>
+                        <p class="setting-desc">Automatically analyze emails when opened.</p>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="autoScanToggle">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+            </section>
+
+            <!-- TRUSTED SENDERS -->
+            <section class="settings-group">
+                <h2>Trusted Senders</h2>
+                <p class="setting-desc">Emails from these addresses will be marked SAFE automatically.</p>
+                <p class="setting-hint">💡 Use <code>*@domain.com</code> to trust all senders from a domain.</p>
+
+                <div class="trusted-input-row">
+                    <input type="text" id="trustedInput" placeholder="email@example.com or *@domain.com">
+                    <button id="addTrustedBtn" class="add-btn" title="Add trusted sender">+</button>
+                </div>
+                <div id="inputError" class="input-error"></div>
+
+                <ul id="trustedList" class="trusted-list">
+                    <!-- Items added via JS -->
+                </ul>
+
+
+            </section>
+
+        </main>
+
+        <footer>
+            <button id="saveBtn" class="save-button">Save Changes</button>
+            <div id="statusMsg" class="status-message"></div>
+        </footer>
+
+    </div>
+
+    <script src="settings.js"></script>
+</body>
+
+</html>
